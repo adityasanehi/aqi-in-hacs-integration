@@ -1,0 +1,75 @@
+{
+  "entity": {
+    "sensor": {
+      "aqi_in": {
+        "default": "mdi:air-filter"
+      },
+      "aqi_us": {
+        "default": "mdi:air-filter"
+      },
+      "pm25": {
+        "default": "mdi:blur"
+      },
+      "pm10": {
+        "default": "mdi:blur"
+      },
+      "no2": {
+        "default": "mdi:molecule"
+      },
+      "o3": {
+        "default": "mdi:molecule"
+      },
+      "so2": {
+        "default": "mdi:molecule"
+      },
+      "co": {
+        "default": "mdi:molecule-co"
+      },
+      "noise": {
+        "default": "mdi:volume-high"
+      },
+      "tvoc": {
+        "default": "mdi:air-filter"
+      },
+      "temperature": {
+        "default": "mdi:thermometer"
+      },
+      "humidity": {
+        "default": "mdi:water-percent"
+      },
+      "pressure": {
+        "default": "mdi:gauge"
+      },
+      "wind_speed": {
+        "default": "mdi:weather-windy"
+      },
+      "uv_index": {
+        "default": "mdi:weather-sunny-alert"
+      },
+      "last_updated": {
+        "default": "mdi:clock-outline"
+      },
+      "pm1": {
+        "default": "mdi:blur"
+      },
+      "particles_0_3": {
+        "default": "mdi:dots-hexagon"
+      },
+      "particles_0_5": {
+        "default": "mdi:dots-hexagon"
+      },
+      "particles_1_0": {
+        "default": "mdi:dots-hexagon"
+      },
+      "particles_3_0": {
+        "default": "mdi:dots-hexagon"
+      },
+      "particles_5_0": {
+        "default": "mdi:dots-hexagon"
+      },
+      "particles_10_0": {
+        "default": "mdi:dots-hexagon"
+      }
+    }
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add AQI.in",
+        "menu_options": {
+          "location": "Public monitoring station",
+          "account": "Sign in to my AQI.in account"
+        }
+      },
+      "location": {
+        "title": "Choose a location",
+        "description": "Pick the point to search around. This is prefilled with your Home Assistant location — change it to add a station somewhere else.",
+        "data": {
+          "location": "Location"
+        }
+      },
+      "account": {
+        "title": "Sign in to AQI.in",
+        "description": "Your own monitors report more than public stations do, including PM1 and particle counts. Every monitor on the account is added.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in again",
+        "description": "AQI.in rejected the saved credentials for {email}.",
+        "data": {
+          "password": "Password"
+        }
+      },
+      "station": {
+        "title": "Choose a station",
+        "description": "The nearest monitoring stations, closest first.",
+        "data": {
+          "station": "Station"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to AQI.in",
+      "invalid_auth": "Invalid credentials, or no AQI.in access token could be obtained",
+      "no_stations_found": "No monitoring stations were found near those coordinates",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This station or account is already configured",
+      "reauth_successful": "Signed in again successfully"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "aqi_in": {
+        "name": "AQI (India)"
+      },
+      "aqi_us": {
+        "name": "AQI (US)"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "pm10": {
+        "name": "PM10"
+      },
+      "no2": {
+        "name": "Nitrogen dioxide"
+      },
+      "o3": {
+        "name": "Ozone"
+      },
+      "so2": {
+        "name": "Sulphur dioxide"
+      },
+      "co": {
+        "name": "Carbon monoxide"
+      },
+      "noise": {
+        "name": "Noise"
+      },
+      "tvoc": {
+        "name": "TVOC"
+      },
+      "temperature": {
+        "name": "Temperature"
+      },
+      "humidity": {
+        "name": "Humidity"
+      },
+      "pressure": {
+        "name": "Pressure"
+      },
+      "wind_speed": {
+        "name": "Wind speed"
+      },
+      "uv_index": {
+        "name": "UV index"
+      },
+      "last_updated": {
+        "name": "Last updated"
+      },
+      "pm1": {
+        "name": "PM1"
+      },
+      "particles_0_3": {
+        "name": "Particles 0.3 µm"
+      },
+      "particles_0_5": {
+        "name": "Particles 0.5 µm"
+      },
+      "particles_1_0": {
+        "name": "Particles 1.0 µm"
+      },
+      "particles_3_0": {
+        "name": "Particles 3.0 µm"
+      },
+      "particles_5_0": {
+        "name": "Particles 5.0 µm"
+      },
+      "particles_10_0": {
+        "name": "Particles 10.0 µm"
+      }
+    }
+  }
+}

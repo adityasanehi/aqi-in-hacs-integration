@@ -1,0 +1,13 @@
+{
+  "domain": "aqi_in",
+  "name": "AQI.in",
+  "codeowners": ["@adityasanehi"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/adityasanehi/aqi-in-hacs-integration",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/adityasanehi/aqi-in-hacs-integration/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}

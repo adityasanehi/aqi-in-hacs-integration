@@ -1,0 +1,48 @@
+{
+  "categories": [
+    {
+      "title": "### Features",
+      "labels": ["feature", "enhancement"],
+      "rules": [
+        { "pattern": "(?i)^(feat|feature|add)\\b", "on_property": "title" }
+      ]
+    },
+    {
+      "title": "### Fixes",
+      "labels": ["bug", "fix"],
+      "rules": [
+        { "pattern": "(?i)^(fix|bug)\\b", "on_property": "title" }
+      ]
+    },
+    {
+      "title": "### Reliability & Performance",
+      "labels": ["reliability", "performance"],
+      "rules": [
+        { "pattern": "(?i)(retr|timeout|cach|sess|reliab|perf|backoff)", "on_property": "title" }
+      ]
+    },
+    {
+      "title": "### Branding",
+      "labels": ["branding", "design"],
+      "rules": [
+        { "pattern": "(?i)(icon|brand|logo|hacs assets)", "on_property": "title" }
+      ]
+    },
+    {
+      "title": "### Other Changes",
+      "labels": [],
+      "rules": [
+        { "pattern": ".+", "on_property": "title" }
+      ]
+    }
+  ],
+  "ignore_labels": [],
+  "sort": { "order": "ASC", "on_property": "mergedAt" },
+  "template": "## What's Changed\n\n#{{CHANGELOG}}\n\n**Full diff**: https://github.com/#{{OWNER}}/#{{REPO}}/compare/#{{FROM_TAG}}...#{{TO_TAG}}",
+  "pr_template": "- **#{{TITLE}}**",
+  "empty_template": "_No notable changes since the previous release._",
+  "max_pull_requests": 200,
+  "max_back_track_time_days": 365,
+  "exclude_merge_branches": [],
+  "tag_resolver": { "method": "semver" }
+}

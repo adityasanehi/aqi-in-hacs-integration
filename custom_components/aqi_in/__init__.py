@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
+from homeassistant.const import CONF_EMAIL, CONF_HOST, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AqiInAccountClient, AqiInClient
-from .const import CONF_SLUG
-from .coordinator import AqiInAccountCoordinator, AqiInCoordinator
+from .const import CONF_LOCATION_ID, CONF_SLUG
+from .coordinator import AqiInAccountCoordinator, AqiInCoordinator, AqiInLocalCoordinator
+from .local import AqiInLocalClient
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
-type AqiInCoordinatorType = AqiInCoordinator | AqiInAccountCoordinator
+type AqiInCoordinatorType = AqiInCoordinator | AqiInAccountCoordinator | AqiInLocalCoordinator
 type AqiInConfigEntry = ConfigEntry[AqiInCoordinatorType]
 
 
@@ -27,7 +28,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: AqiInConfigEntry) -> boo
     session = async_get_clientsession(hass)
 
     coordinator: AqiInCoordinatorType
-    if is_account_entry(entry):
+    if CONF_HOST in entry.data:
+        coordinator = AqiInLocalCoordinator(
+            hass, AqiInLocalClient(session, entry.data[CONF_HOST]), entry.data[CONF_LOCATION_ID]
+        )
+    elif is_account_entry(entry):
         coordinator = AqiInAccountCoordinator(
             hass,
             AqiInAccountClient(

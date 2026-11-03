@@ -5,7 +5,8 @@
         "title": "Add AQI.in",
         "menu_options": {
           "location": "Public monitoring station",
-          "account": "Sign in to my AQI.in account"
+          "account": "Sign in to my AQI.in account",
+          "local": "Local Prana Air monitor"
         }
       },
       "location": {
@@ -36,17 +37,36 @@
         "data": {
           "station": "Station"
         }
+      },
+      "local": {
+        "title": "Connect to a local Prana Air monitor",
+        "description": "Enter the monitor’s IPv4 address. Reads PM1, PM2.5, PM10, temperature and humidity every 30 seconds without an account. Local PM10 can differ from the cloud reading; local sensors are named separately. Tested on a community monitor with a /data page.",
+        "data": {
+          "host": "IPv4 address"
+        }
+      },
+      "reconfigure": {
+        "title": "Change the local monitor address",
+        "description": "Enter the new IPv4 address of the same monitor. Its device ID must match.",
+        "data": {
+          "host": "IPv4 address"
+        }
       }
     },
     "error": {
       "cannot_connect": "Failed to connect to AQI.in",
       "invalid_auth": "Invalid credentials, or no AQI.in access token could be obtained",
       "no_stations_found": "No monitoring stations were found near those coordinates",
-      "unknown": "Unexpected error"
+      "unknown": "Unexpected error",
+      "invalid_host": "Enter an IPv4 address, without http:// or a path",
+      "cannot_connect_local": "Cannot reach the local monitor",
+      "invalid_local_data": "The device did not return a recognised Prana Air ID and measurement page"
     },
     "abort": {
-      "already_configured": "This station or account is already configured",
-      "reauth_successful": "Signed in again successfully"
+      "already_configured": "This station, account or local monitor is already configured",
+      "reauth_successful": "Signed in again successfully",
+      "unique_id_mismatch": "This address belongs to a different monitor",
+      "reconfigure_not_supported": "Only local monitor addresses can be reconfigured"
     }
   },
   "entity": {
@@ -119,6 +139,21 @@
       },
       "particles_10_0": {
         "name": "Particles 10.0 µm"
+      },
+      "local_pm1": {
+        "name": "PM1 (local)"
+      },
+      "local_pm25": {
+        "name": "PM2.5 (local)"
+      },
+      "local_pm10": {
+        "name": "PM10 (local)"
+      },
+      "local_temperature": {
+        "name": "Temperature (local)"
+      },
+      "local_humidity": {
+        "name": "Humidity (local)"
       }
     }
   }

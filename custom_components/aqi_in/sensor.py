@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from typing import Any
 
@@ -16,6 +16,7 @@ from homeassistant.components.sensor import (
 from homeassistant.const import (
     CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     CONCENTRATION_PARTS_PER_MILLION,
+    CONF_HOST,
     PERCENTAGE,
     EntityCategory,
     UnitOfPressure,
@@ -32,7 +33,7 @@ from homeassistant.util import dt as dt_util
 
 from . import AqiInConfigEntry, is_account_entry
 from .const import CONF_LOCATION_ID, CONF_SLUG, CONF_STATION_NAME, DOMAIN
-from .coordinator import AqiInAccountCoordinator, AqiInCoordinator
+from .coordinator import AqiInAccountCoordinator, AqiInCoordinator, AqiInLocalCoordinator
 
 
 def _iaqi(key: str) -> Callable[[dict[str, Any]], StateType]:
@@ -191,6 +192,26 @@ SENSORS: tuple[AqiInSensorDescription, ...] = (
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+)
+
+# Separate identities preserve cloud PM10 statistics when the two sources differ.
+LOCAL_SENSORS = tuple(
+    replace(
+        description,
+        key=f"local_{description.key}",
+        translation_key=f"local_{description.key}",
+    )
+    for description in (
+        *SENSORS,
+        AqiInSensorDescription(
+            key="pm1",
+            value_fn=_iaqi("pm1"),
+            device_class=SensorDeviceClass.PM1,
+            state_class=SensorStateClass.MEASUREMENT,
+            native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        ),
+    )
+    if description.key in ("pm1", "pm25", "pm10", "temperature", "humidity")
 )
 
 
@@ -374,20 +395,20 @@ async def async_setup_entry(
 
     async_add_entities(
         AqiInSensor(coordinator, entry, description)
-        for description in SENSORS
+        for description in (LOCAL_SENSORS if CONF_HOST in entry.data else SENSORS)
         if description.value_fn(data) is not None
     )
 
 
-class AqiInSensor(CoordinatorEntity[AqiInCoordinator], SensorEntity):
-    """A single reading from an AQI.in station."""
+class AqiInSensor(CoordinatorEntity[AqiInCoordinator | AqiInLocalCoordinator], SensorEntity):
+    """A single reading from a public station or local monitor."""
 
     entity_description: AqiInSensorDescription
     _attr_has_entity_name = True
 
     def __init__(
         self,
-        coordinator: AqiInCoordinator,
+        coordinator: AqiInCoordinator | AqiInLocalCoordinator,
         entry: AqiInConfigEntry,
         description: AqiInSensorDescription,
     ) -> None:
@@ -396,13 +417,18 @@ class AqiInSensor(CoordinatorEntity[AqiInCoordinator], SensorEntity):
         self.entity_description = description
 
         location_id = entry.data[CONF_LOCATION_ID]
+        host = entry.data.get(CONF_HOST)
         self._attr_unique_id = f"{location_id}_{description.key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, location_id)},
             name=entry.data[CONF_STATION_NAME],
-            manufacturer="AQI.in",
-            model="Air quality station",
-            configuration_url=f"https://www.aqi.in/dashboard/{entry.data[CONF_SLUG]}",
+            manufacturer="Prana Air" if host else "AQI.in",
+            model="Community monitor" if host else "Air quality station",
+            configuration_url=(
+                f"http://{host}/data"
+                if host
+                else f"https://www.aqi.in/dashboard/{entry.data[CONF_SLUG]}"
+            ),
         )
 
     @property

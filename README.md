@@ -6,6 +6,7 @@ Assistant sensors.
 - Pick a station from the **five nearest** to any point, listed closest first
 - **Live AQI** (Indian and US scales), pollutants, temperature, humidity and more
 - Or **sign in** to add your own monitors, with PM1 and particle counts
+- Or connect a supported **Prana Air monitor locally**, without an account
 - **Add as many stations as you like** — each becomes its own device
 - No API key, no `configuration.yaml`
 
@@ -26,8 +27,8 @@ Copy `custom_components/aqi_in` into your `config/custom_components/` directory 
 
 ## Setup
 
-You're first asked to choose between a **public monitoring station** and **signing in to your
-AQI.in account**. Both can be used at the same time.
+Choose a **public monitoring station**, **AQI.in account**, or **local Prana Air monitor**.
+These modes can be used alongside each other.
 
 ### Public station
 
@@ -54,6 +55,40 @@ as its own device — there's nothing to pick. If the password changes, Home Ass
 to sign in again rather than silently going stale.
 
 Credentials are stored in the Home Assistant config entry and sent only to `aqi.in`.
+
+### Local Prana Air monitor
+
+Choose **Local Prana Air monitor** and enter its IPv4 address, for example
+`192.168.1.50`. No AQI.in credentials are required. Setup checks the Prana Air
+device ID and its `/data` page; only monitors serving this observed community
+monitor interface are supported. Reserve its IP in your router. If it changes,
+use the entry's **Reconfigure** menu to enter the new address; the device ID must
+still match.
+
+The integration reads **PM1, PM2.5, PM10, temperature and humidity** from the
+monitor every **30 seconds**. Sensors are named **PM2.5 (local)**, etc., and have
+separate identities from cloud sensors, so adding local access preserves existing
+cloud values and statistics. Temperature on the observed page has less precision
+than the cloud feed. Local PM10 differed from the account feed in a live paired
+comparison (473 versus 403.16 µg/m³); the cause is unknown and no correction is
+applied. PM2.5, PM1 and humidity matched in that comparison.
+
+Local access exposes no AQI, TVOC, noise, particle counts or weather. The page's
+CO2 zero is omitted because the same monitor's account feed has no CO2 sensor.
+The page has no measurement timestamp: a successful poll confirms the page is
+reachable, not that its sensors are producing fresh samples. Connection or page
+validation errors make local sensors unavailable, without replacing them with
+cached cloud readings. No cloud requests are made by a local entry, but operation
+with the monitor's internet connection disabled has not been tested.
+
+This interface was verified on one community monitor whose page is titled
+**Bohu Monitor**. It is undocumented in the public
+[community manual](https://www.aqi.in/manuals/community-monitor-manual.pdf),
+so other hardware or firmware may expose different pages. Local sensor units
+are based on the corresponding account sensor metadata and the live comparison.
+Setup/reload checks device identity; ongoing polling only reads `/data` to avoid
+repeatedly fetching the Wi-Fi setup page. Use an IP reservation to prevent an
+address being reassigned to another monitor.
 
 ## Sensors
 
@@ -105,7 +140,8 @@ TVOC *is* typed as ppm on both paths. The public feed states no unit, but it's t
 device API labels ppm — cross-checked on one monitor a minute apart, the public feed read 0.006
 against the device's 0.008 ppm.
 
-Data refreshes every 10 minutes, matching how often AQI.in publishes — one API call per station,
+Cloud data refreshes every 10 minutes, matching the observed public-station cadence —
+one API call per station,
 or one per account plus one per owned device for the merged weather.
 History and long-term statistics come from Home Assistant's own recorder, so no extra polling is
 needed.

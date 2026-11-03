@@ -6,9 +6,10 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import SOURCE_RECONFIGURE, ConfigFlow, ConfigFlowResult
 from homeassistant.const import (
     CONF_EMAIL,
+    CONF_HOST,
     CONF_LATITUDE,
     CONF_LOCATION,
     CONF_LONGITUDE,
@@ -39,6 +40,7 @@ from .const import (
     CONF_USER_ID,
     DOMAIN,
 )
+from .local import AqiInLocalClient
 
 ACCOUNT_SCHEMA = vol.Schema(
     {
@@ -91,10 +93,64 @@ class AqiInConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Choose between a public station and signing in to an account."""
+        """Choose a public station, an account or a local monitor."""
         return self.async_show_menu(
-            step_id="user", menu_options=["location", "account"]
+            step_id="user", menu_options=["location", "account", "local"]
         )
+
+    async def async_step_local(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Validate the local monitor and retain its stable hardware identity."""
+        errors: dict[str, str] = {}
+        reconfigure = self.source == SOURCE_RECONFIGURE
+        entry = self._get_reconfigure_entry() if reconfigure else None
+        if user_input is not None:
+            try:
+                client = AqiInLocalClient(
+                    async_get_clientsession(self.hass), user_input[CONF_HOST]
+                )
+                serial = await client.async_serial()
+                await client.async_readings()
+            except ValueError:
+                errors[CONF_HOST] = "invalid_host"
+            except AqiInConnectionError:
+                errors["base"] = "cannot_connect_local"
+            except AqiInError:
+                errors["base"] = "invalid_local_data"
+            else:
+                await self.async_set_unique_id(f"local_{serial}")
+                if entry is not None:
+                    self._abort_if_unique_id_mismatch()
+                    return self.async_update_reload_and_abort(
+                        entry, data_updates={CONF_HOST: client.host}
+                    )
+                self._abort_if_unique_id_configured()
+                return self.async_create_entry(
+                    title=f"Prana Air {serial} (local)",
+                    data={
+                        CONF_HOST: client.host,
+                        CONF_LOCATION_ID: serial,
+                        CONF_STATION_NAME: f"Prana Air {serial}",
+                    },
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure" if reconfigure else "local",
+            data_schema=self.add_suggested_values_to_schema(
+                vol.Schema({vol.Required(CONF_HOST): str}),
+                user_input or (dict(entry.data) if entry else {}),
+            ),
+            errors=errors,
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Change a local monitor's IP, rejecting a different device."""
+        if CONF_HOST not in self._get_reconfigure_entry().data:
+            return self.async_abort(reason="reconfigure_not_supported")
+        return await self.async_step_local(user_input)
 
     async def async_step_location(
         self, user_input: dict[str, Any] | None = None

@@ -8,6 +8,7 @@ DOMAIN = "aqi_in"
 # stepped 00:01 -> 00:11 -> 00:21 -> 00:31), so match it rather than
 # under-sampling and drifting out of phase with the source.
 DEFAULT_SCAN_INTERVAL = 600
+LOCAL_SCAN_INTERVAL = 30
 
 CONF_LOCATION_ID = "location_id"
 CONF_SLUG = "slug"

@@ -12,3 +12,6 @@ venv/
 # Test suite and its dependencies are maintained locally, not published.
 tests/
 requirements_test.txt
+
+# Local device and proprietary app investigation notes.
+research/

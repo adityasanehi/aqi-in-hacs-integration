@@ -18,7 +18,8 @@ from .api import (
     AqiInConnectionError,
     AqiInError,
 )
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN
+from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, LOCAL_SCAN_INTERVAL
+from .local import AqiInLocalClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,6 +63,36 @@ class AqiInCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return await _retry_once(lambda: self.client.async_station(self.slug))
         except AqiInError as err:
             raise UpdateFailed(f"Cannot update {self.slug}: {err}") from err
+
+
+class AqiInLocalCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+    """Poll local measurements, checking device identity at setup/reload."""
+
+    def __init__(
+        self, hass: HomeAssistant, client: AqiInLocalClient, serial: str
+    ) -> None:
+        """Bind polling to the serial identified during configuration."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=DOMAIN,
+            update_interval=timedelta(seconds=LOCAL_SCAN_INTERVAL),
+        )
+        self.client = client
+        self.serial = serial
+        # shortcut: /data has no ID; reserve the IP until firmware includes one.
+        self._identified = False
+
+    async def _async_update_data(self) -> dict[str, Any]:
+        try:
+            if not self._identified:
+                if await self.client.async_serial() != self.serial:
+                    raise AqiInError("A different monitor is using the saved IP address")
+                self._identified = True
+            return await self.client.async_readings()
+        except AqiInError as err:
+            self._identified = False
+            raise UpdateFailed(f"Cannot update local Prana Air monitor: {err}") from err
 
 
 class AqiInAccountCoordinator(DataUpdateCoordinator[dict[str, Any]]):

@@ -29,7 +29,9 @@ TOKEN_RE = re.compile(r"eyJhbGciOiJIUzI1NiI[\w-]*\.[\w-]+\.[\w-]+")
 # Re-scrape once the cached token is within a day of expiring.
 REFRESH_SKEW = 86400
 
-REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=30)
+# Healthy responses take well under a second. A stalled connection never
+# answers, so fail it fast and let the coordinator retry on a fresh one.
+REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=10)
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Awaitable, Callable
 from datetime import timedelta
 from typing import Any
 
@@ -10,10 +11,30 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import AqiInAccountClient, AqiInAuthError, AqiInClient, AqiInError
+from .api import (
+    AqiInAccountClient,
+    AqiInAuthError,
+    AqiInClient,
+    AqiInConnectionError,
+    AqiInError,
+)
 from .const import DEFAULT_SCAN_INTERVAL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def _retry_once[T](fetch: Callable[[], Awaitable[T]]) -> T:
+    """Run a fetch, retrying once straight away on a connection error.
+
+    AQI.in intermittently stalls a fresh connection until it times out. A
+    second attempt almost always succeeds, whereas failing the update leaves
+    every sensor unavailable until the next poll, 10 minutes later.
+    """
+    try:
+        return await fetch()
+    except AqiInConnectionError as err:
+        _LOGGER.debug("AQI.in request failed, retrying once: %s", err)
+        return await fetch()
 
 
 class AqiInCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -38,7 +59,7 @@ class AqiInCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         dead end. Token recovery happens inside the client.
         """
         try:
-            return await self.client.async_station(self.slug)
+            return await _retry_once(lambda: self.client.async_station(self.slug))
         except AqiInError as err:
             raise UpdateFailed(f"Cannot update {self.slug}: {err}") from err
 
@@ -77,7 +98,7 @@ class AqiInAccountCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         to trigger the reauth prompt.
         """
         try:
-            devices = await self.client.async_devices()
+            devices = await _retry_once(self.client.async_devices)
         except AqiInAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except AqiInError as err:

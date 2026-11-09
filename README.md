@@ -12,14 +12,19 @@ Assistant sensors.
 
 ## Installation
 
-### HACS (recommended)
+### Marketplace (recommended)
 
-[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=adityasanehi&repository=aqi-in-hacs-integration&category=integration)
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=adityasanehi&repository=aqi-in-hacs-integration&category=integration)
 
-1. HACS → three-dot menu → **Custom repositories**
-2. Add `https://github.com/adityasanehi/aqi-in-hacs-integration` with category **Integration**
-3. Install **AQI.in**, then restart Home Assistant
-4. **Settings → Devices & Services → Add Integration → AQI.in**
+Home Assistant 2026.11 and newer:
+
+1. **Settings → Marketplace → Add from link**
+2. Enter `https://github.com/adityasanehi/aqi-in-hacs-integration`
+3. Select **Install** on **AQI.in**. Setup opens straight away, with no restart needed.
+
+On older versions with HACS: **HACS → three-dot menu → Custom repositories**, add the URL above
+with category **Integration**, install **AQI.in**, restart, then go to
+**Settings → Devices & Services → Add Integration → AQI.in**.
 
 ### Manual
 

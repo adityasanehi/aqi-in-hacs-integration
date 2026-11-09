@@ -80,7 +80,7 @@ class AqiInLocalCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.client = client
         self.serial = serial
-        # shortcut: /data has no ID; reserve the IP until firmware includes one.
+        # /data has no device ID, so re-check the serial only at setup or after a failure.
         self._identified = False
 
     async def _async_update_data(self) -> dict[str, Any]:

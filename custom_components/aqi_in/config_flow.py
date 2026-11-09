@@ -37,21 +37,20 @@ from .const import (
     CONF_LOCATION_ID,
     CONF_SLUG,
     CONF_STATION_NAME,
-    CONF_USER_ID,
     DOMAIN,
 )
 from .local import AqiInLocalClient
+
+PASSWORD_SELECTOR = TextSelector(
+    TextSelectorConfig(type=TextSelectorType.PASSWORD, autocomplete="current-password")
+)
 
 ACCOUNT_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_EMAIL): TextSelector(
             TextSelectorConfig(type=TextSelectorType.EMAIL, autocomplete="username")
         ),
-        vol.Required(CONF_PASSWORD): TextSelector(
-            TextSelectorConfig(
-                type=TextSelectorType.PASSWORD, autocomplete="current-password"
-            )
-        ),
+        vol.Required(CONF_PASSWORD): PASSWORD_SELECTOR,
     }
 )
 
@@ -173,12 +172,10 @@ class AqiInConfigFlow(ConfigFlow, domain=DOMAIN):
             except AqiInError:
                 _LOGGER.exception("Unexpected AQI.in error while finding stations")
                 errors["base"] = "unknown"
-
-            if not errors and not self._stations:
+            else:
+                if self._stations:
+                    return await self.async_step_station()
                 errors["base"] = "no_stations_found"
-
-            if not errors:
-                return await self.async_step_station()
 
             location_default = location
         else:
@@ -215,8 +212,6 @@ class AqiInConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_LOCATION_ID: str(station["locationId"]),
                     CONF_SLUG: slug,
                     CONF_STATION_NAME: name,
-                    CONF_LATITUDE: station.get("latitude"),
-                    CONF_LONGITUDE: station.get("longitude"),
                 },
             )
 
@@ -280,7 +275,6 @@ class AqiInConfigFlow(ConfigFlow, domain=DOMAIN):
                     data={
                         CONF_EMAIL: user_input[CONF_EMAIL],
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
-                        CONF_USER_ID: user.get("id"),
                     },
                 )
 
@@ -312,16 +306,7 @@ class AqiInConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_PASSWORD): TextSelector(
-                        TextSelectorConfig(
-                            type=TextSelectorType.PASSWORD,
-                            autocomplete="current-password",
-                        )
-                    )
-                }
-            ),
+            data_schema=vol.Schema({vol.Required(CONF_PASSWORD): PASSWORD_SELECTOR}),
             description_placeholders={CONF_EMAIL: entry.data[CONF_EMAIL]},
             errors=errors,
         )
